@@ -1,0 +1,1 @@
+# Moduł do obsługi przeszkód

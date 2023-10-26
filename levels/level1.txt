@@ -1,0 +1,6 @@
+width: 800
+height: 640
+player_start: 100
+platforms:
+    - 200, 500, 300, 10
+    - 100, 400, 100, 10
