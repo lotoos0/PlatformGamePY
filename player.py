@@ -186,6 +186,7 @@ class Player(Sprite):
             self.update_attack()
 
     def check_collision(self, platforms):
+
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
             for platform in hits:
@@ -200,6 +201,8 @@ class Player(Sprite):
                     self.rect.right = platform.rect.left
                 elif self.speed_x < 0:
                     self.rect.left = platform.rect.right
+                if self.speed_y == 0:
+                    self.is_jumping = False
 
     def handle_event(self, events):
         for event in events:

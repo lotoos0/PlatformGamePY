@@ -2,7 +2,7 @@ import pygame
 import pygame.mixer
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FONT_HALEAH_FAT
 from player import Player
-from platforms import Platform
+from platforms import ClassicPlatform, GravityPlatform
 
 
 class Game:
@@ -14,12 +14,13 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.platforms = pygame.sprite.Group()
 
+        #platform2 = GravityPlatform(600, 600)
+        #self.platforms.add(platform2)
+
+        self.gravity_platform = GravityPlatform(600, 600)
+
         self.player = Player(100, 700, self.platforms)
         self.all_sprites.add(self.player)
-
-        platform1 = Platform(200, 100)
-        self.all_sprites.add(platform1)
-        self.platforms.add(platform1)
 
         self.clock = pygame.time.Clock()
         self.is_running = True
@@ -35,6 +36,9 @@ class Game:
     def update(self):
         for sprite in self.all_sprites:
             sprite.update()
+
+        if self.gravity_platform.collide_with_player(self.player):
+            self.player.vel.x = 0
 
     def draw(self):
         self.screen.fill((0, 0, 1))
