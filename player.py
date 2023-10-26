@@ -6,6 +6,7 @@ from platforms import *
 from pygame.sprite import Sprite
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
+
 class Player(Sprite):
     def __init__(self, x, y, platforms):
         super().__init__()
@@ -14,9 +15,10 @@ class Player(Sprite):
         self.height = 74
         self.platforms = platforms
 
-#       STATISTICS
-        health = 100
-        magic_power = 100
+        self.health = 100
+        self.health_text = str(self.health)
+        self.mana = 80
+        self.mana_text = str(self.mana)
         stamina = 100
         Endurance = 0 #Wytrzymalosc np. na trucizny
         damage_default = 5  #Podstawowy dmg postaci.
@@ -24,9 +26,6 @@ class Player(Sprite):
         intelligence = 0 # Wiedza może wpłynąć na zdolność do rozwiązywania zagadek lub skuteczność zaklęć.
         luck = 0 # not sure jeszcze
         reputation = 0 #moze kiedys dodac reputacje z npc
-
-
-
 
         self.image = pygame.image.load("assets/player/Adventurer/Individual_Sprites/adventurer-idle-00.png")
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
@@ -102,6 +101,8 @@ class Player(Sprite):
 
     def update(self):
         self.check_collision(self.platforms)
+        self.health_text = str(self.health)
+
         keys = pygame.key.get_pressed()
 
         move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
@@ -110,7 +111,7 @@ class Player(Sprite):
         attack = keys[pygame.K_q]
 
         if move_left:
-            self.speed_x = -30 #RUNNING SPEED
+            self.speed_x = -30 # RUNNING SPEED
             self.is_running = True
             if not self.facing_left:
                 self.idle_frames = [pygame.transform.flip(frame, True, False) for frame in self.idle_frames]
@@ -184,8 +185,6 @@ class Player(Sprite):
         if self.is_attacking:
             self.update_attack()
 
-
-
     def check_collision(self, platforms):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         if hits:
@@ -202,11 +201,9 @@ class Player(Sprite):
                 elif self.speed_x < 0:
                     self.rect.left = platform.rect.right
 
-
     def handle_event(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_LEFT, pygame.K_a, pygame.K_RIGHT, pygame.K_d):
                     self.current_frame = 0
-
 
