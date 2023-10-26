@@ -1,0 +1,7 @@
+TODO:
+    -->Dlaczego Wyrzuca playera w miejsce gdzie zaczął skok, gdy skacze na platforme?
+            moze cos z player nie tak.
+    Platformy:
+        Classic
+        Gravity
+        Unknown
