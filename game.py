@@ -3,6 +3,7 @@ import pygame.mixer
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FONT_HALEAH_FAT
 from player import Player
 from platforms import ClassicPlatform, GravityPlatform
+from platforms import *
 
 
 class Game:
@@ -18,6 +19,7 @@ class Game:
         #self.platforms.add(platform2)
 
         self.gravity_platform = GravityPlatform(600, 600)
+        self.platforms.add(self.gravity_platform)
 
         self.player = Player(100, 700, self.platforms)
         self.all_sprites.add(self.player)
@@ -37,12 +39,16 @@ class Game:
         for sprite in self.all_sprites:
             sprite.update()
 
+        for sprite in self.platforms:
+            sprite.update()
+
         if self.gravity_platform.collide_with_player(self.player):
-            self.player.vel.x = 0
+            self.player.speed_x = 0
 
     def draw(self):
-        self.screen.fill((0, 0, 1))
+        self.screen.fill((0, 0, 0))
         self.all_sprites.draw(self.screen)
+        self.platforms.draw(self.screen)
 
         health_plus_image = pygame.image.load("assets/images/Pixel_UI/healbar/heal_plus.png")
         text_font = pygame.font.Font(FONT_HALEAH_FAT, 24)

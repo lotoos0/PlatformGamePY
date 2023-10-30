@@ -28,10 +28,10 @@ class GravityPlatform(Sprite):
 
     def collide_with_player(self, player):
         if self.rect.colliderect(player.rect):
-            if player.vel.y > 0:
-                player.pos.y = self.rect.top - player.rect.height
-                player.vel.y = 0
-
+            if player.speed_y > 0:
+                player.speed_y = self.rect.top - player.rect.height
+                player.speed_y = 0
 
             return True
         return False
+
