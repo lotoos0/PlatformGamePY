@@ -27,11 +27,6 @@ class GravityPlatform(Sprite):
         self.rect.y = y
 
     def collide_with_player(self, player):
-        if self.rect.colliderect(player.rect):
-            if player.speed_y > 0:
-                player.speed_y = self.rect.top - player.rect.height
-                player.speed_y = 0
-
-            return True
-        return False
-
+        if pygame.sprite.collide_rect(self, player):
+#           kolizja
+            player.rect.y = self.rect.y - player.rect.height

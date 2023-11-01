@@ -1,11 +1,9 @@
-# Moduł do obsługi postaci gracza
 import pygame
 import pygame.key
 import pygame.rect
 from platforms import *
 from pygame.sprite import Sprite
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT
-
 
 class Player(Sprite):
     def __init__(self, x, y, platforms):
@@ -35,6 +33,8 @@ class Player(Sprite):
         self.speed_x = 0
         self.speed_y = 0
 
+        self.facing_direction = "right"  # Początkowo patrzy w prawo
+
 #       ATTACK THINGS
         self.attack_frames = [
             pygame.image.load("assets/player/Adventurer/Individual_Sprites/adventurer-attack1-00.png"),
@@ -57,7 +57,7 @@ class Player(Sprite):
         self.is_jumping = False
         self.jump_frame_delay = 10
         self.last_jump_frame_time = 0
-        self.jump_power = -40
+        self.jump_power = -60
         self.jump_gravity = 10
 #       RUNNING THINGS
         self.run_frames = [
@@ -71,7 +71,6 @@ class Player(Sprite):
         self.is_running = False
         self.run_frame_delay = 100
 
-
 #       IDLE Things
         self.idle_frames = [
             pygame.image.load("assets/player/Adventurer/Individual_Sprites/adventurer-idle-00.png"),
@@ -82,10 +81,27 @@ class Player(Sprite):
         self.idle_frame_delay = 640
         self.facing_left = False
 
+    def jump(self):
+        if not self.is_jumping:
+            self.is_jumping = True
+            self.speed_y = self.jump_power
+
     def attack(self):
         if not self.is_attacking:
             self.is_attacking = True
             self.current_frame = 0
+
+    def update_jump(self):
+        if self.is_jumping:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_jump_frame_time >= self.jump_frame_delay:
+                self.current_frame += 1
+            if self.current_frame >= len(self.jump_frames):
+                self.current_frame = 0
+                self.is_jumping = False  # Zakończ anikmację skou
+            self.image = pygame.transform.scale(self.jump_frames[self.current_frame], (self.width, self.height))
+            self.last_jump_frame_time = current_time
+            pygame.time.delay(self.jump_frame_delay)
 
     def update_attack(self):
         if self.is_attacking:
@@ -99,48 +115,42 @@ class Player(Sprite):
             self.last_attack_frame_time = current_time
             pygame.time.delay(self.attack_frame_delay)
 
+    def move(self, direction):
+        speed = 30 if direction == "right" else -30  # RUNNING SPEED
+        self.is_running = True
+        if direction != self.facing_direction:
+            self.facing_direction = direction
+            self.flip_frames()
+        self.speed_x = speed
+
+    def flip_frames(self):
+        #Odwroc animacje w poziomie
+        self.idle_frames = [pygame.transform.flip(frame, True, False) for frame in self.idle_frames]
+        self.run_frames = [pygame.transform.flip(frame, True, False) for frame in self.run_frames]
+        self.jump_frames = [pygame.transform.flip(frame, True, False) for frame in self.jump_frames]
+        self.attack_frames = [pygame.transform.flip(frame, True, False) for frame in self.attack_frames]
+
     def update(self):
-        self.check_collision(self.platforms)
+        # self.check_collision(self.platforms)
         self.health_text = str(self.health)
 
         keys = pygame.key.get_pressed()
 
-        move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        move_right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        jump = keys[pygame.K_SPACE] or keys[pygame.K_w]
-        attack = keys[pygame.K_q]
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.move("left")
 
-        if move_left:
-            self.speed_x = -30 # RUNNING SPEED
-            self.is_running = True
-            if not self.facing_left:
-                self.idle_frames = [pygame.transform.flip(frame, True, False) for frame in self.idle_frames]
-                self.run_frames = [pygame.transform.flip(frame, True, False) for frame in self.run_frames]
-                self.jump_frames = [pygame.transform.flip(frame, True, False) for frame in self.jump_frames]
-                self.attack_frames = [pygame.transform.flip(frame, True, False) for frame in self.attack_frames]
-                self.facing_left = True
-        elif move_right:
-            self.speed_x = 30 # RUNNING SPEED
-            self.is_running = True
-            if self.facing_left:
-                self.idle_frames = [pygame.transform.flip(frame, True, False) for frame in self.idle_frames]
-                self.run_frames = [pygame.transform.flip(frame, True, False) for frame in self.run_frames]
-                self.jump_frames = [pygame.transform.flip(frame, True, False) for frame in self.jump_frames]
-                self.attack_frames = [pygame.transform.flip(frame, True, False) for frame in self.attack_frames]
-                self.facing_left = False
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.move("right")
+
         else:
             self.speed_x = 0
             self.is_running = False
 
-#       ATTACK
-        if attack:
+        if keys[pygame.K_q]:
             self.attack()
 
-
-        #jumping
-        if jump and not self.is_jumping:
-            self.is_jumping = True
-            self.speed_y = self.jump_power
+        if keys[pygame.K_SPACE] or keys[pygame.K_w]:
+            self.jump()
 
         self.speed_y += self.jump_gravity
         self.rect.y += self.speed_y
@@ -172,41 +182,13 @@ class Player(Sprite):
             pygame.time.delay(self.idle_frame_delay)
 
         if self.is_jumping:
-            current_time = pygame.time.get_ticks()
-            if current_time - self.last_jump_frame_time >= self.jump_frame_delay:
-                self.current_frame += 1
-            if self.current_frame >= len(self.jump_frames):
-                self.current_frame = 0
-
-            self.image = pygame.transform.scale(self.jump_frames[self.current_frame], (self.width, self.height))
-            self.last_jump_frame_time = current_time
-            pygame.time.delay(self.jump_frame_delay)
+            self.update_jump()
 
         if self.is_attacking:
             self.update_attack()
-
-    def check_collision(self, platforms):
-
-        hits = pygame.sprite.spritecollide(self, platforms, False)
-        if hits:
-            for platform in hits:
-                if self.speed_y > 0:
-                    self.rect.bottom = platform.rect.top
-                    self.is_jumping = False
-                    self.speed_y = 0
-                elif self.speed_y < 0:
-                    self.rect.top = platform.rect.bottom
-                    self.speed_y = 0
-                if self.speed_x > 0:
-                    self.rect.right = platform.rect.left
-                elif self.speed_x < 0:
-                    self.rect.left = platform.rect.right
-                if self.speed_y == 0:
-                    self.is_jumping = False
 
     def handle_event(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_LEFT, pygame.K_a, pygame.K_RIGHT, pygame.K_d):
                     self.current_frame = 0
-

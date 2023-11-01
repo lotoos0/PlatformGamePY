@@ -2,7 +2,6 @@ import pygame
 import pygame.mixer
 from utils.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FONT_HALEAH_FAT
 from player import Player
-from platforms import ClassicPlatform, GravityPlatform
 from platforms import *
 
 
@@ -12,14 +11,15 @@ class Game:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Mrok - Game")
 
+
         self.all_sprites = pygame.sprite.Group()
         self.platforms = pygame.sprite.Group()
 
         #platform2 = GravityPlatform(600, 600)
         #self.platforms.add(platform2)
 
-        self.gravity_platform = GravityPlatform(600, 600)
-        self.platforms.add(self.gravity_platform)
+        self.gravity_platforms = [GravityPlatform(600, 500), GravityPlatform(400, 500)]
+        self.platforms.add(*self.gravity_platforms)
 
         self.player = Player(100, 700, self.platforms)
         self.all_sprites.add(self.player)
@@ -42,8 +42,11 @@ class Game:
         for sprite in self.platforms:
             sprite.update()
 
-        if self.gravity_platform.collide_with_player(self.player):
-            self.player.speed_x = 0
+        for platform in self.gravity_platforms:
+            if platform.collide_with_player(self.player):
+                self.player.speed_x = 0
+        # if self.gravity_platform.collide_with_player(self.player):
+        #     self.player.speed_x = 0
 
     def draw(self):
         self.screen.fill((0, 0, 0))
@@ -82,9 +85,11 @@ class Game:
         while self.is_running:
             self.handle_events()
             self.update()
-            self.player.check_collision(self.platforms)
-            self.draw()
+            # self.player.check_collision(self.platforms)
+            for platform in self.gravity_platforms:
+                platform.collide_with_player(self.player)
 
+            self.draw()
             pygame.display.flip()
             self.clock.tick(60)
 
